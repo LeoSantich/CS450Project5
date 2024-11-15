@@ -203,7 +203,7 @@ int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 GLuint	SphereDL, VenusDL;		// display lists
 GLuint	VenusTex;				// texture object
-char*	TextureToggle;			// variable to toggle the texture
+bool	TextureToggle;			// variable to toggle the texture
 int		NowPlanet;				// variable for toggling planets
 
 
@@ -491,12 +491,12 @@ Display( )
 	glEnable( GL_NORMALIZE );
 
 
-	if (TextureToggle == "gl_texture_2d")
+	if (TextureToggle == 1)
 		glEnable(GL_TEXTURE_2D);
 	else
 		glDisable(GL_TEXTURE_2D);
 
-	if (TextureToggle == "gl_lighting")
+	if (TextureToggle == 2)
 	{
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
@@ -851,7 +851,7 @@ InitLists( )
 
 	VenusDL = glGenLists(1);
 	glNewList(VenusDL, GL_COMPILE);
-	//glBindTexture(GL_TEXTURE_2D, VenusTex);	// VenusTex must have already been created when this is called
+	glBindTexture(GL_TEXTURE_2D, VenusTex);	// VenusTex must have already been created when this is called
 	glPushMatrix();
 	glScalef(0.95f, 0.95f, 0.95f);	// scale of venus sphere, from the table
 	glColor3f(1.0, 1.0, 1.0);
@@ -982,15 +982,21 @@ Keyboard( unsigned char c, int x, int y )
 			NowPlanet = 1;
 			break;
 
-		case 'x':
-		case 'X':
-			TextureToggle = "gl_texture_2d";
+		case 't':
+		case 'T':
+			TextureToggle = !TextureToggle;
+			(TextureToggle ? 1 : 2);
 			break;
 
-		case 'z':
-		case 'Z':
-			TextureToggle = "gl_lighting";
-			break;
+		//case 'x':
+		//case 'X':
+		//	TextureToggle = 1;
+		//	break;
+
+		//case 'z':
+		//case 'Z':
+		//	TextureToggle = 2;
+		//	break;
 
 
 		case ESCAPE:
@@ -1121,7 +1127,8 @@ Reset( )
 	NowProjection = PERSP;
 	Xrot = Yrot = 0.;
 	Frozen = FALSE;
-	TextureToggle = "gl_texture_2d";
+	TextureToggle = 1;
+	NowPlanet = 1;
 }
 
 
