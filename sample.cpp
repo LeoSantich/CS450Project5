@@ -202,8 +202,11 @@ float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 GLuint	SphereDL, VenusDL;		// display lists
+GLuint	EarthDL;				// display lists
 GLuint	VenusTex;				// texture object
+GLuint	EarthTex;				// texture object
 bool	TextureToggle;			// variable to toggle the texture
+bool	LightToggle;			// variable to hold toggle value		
 int		NowPlanet;				// variable for toggling planets
 
 
@@ -413,7 +416,7 @@ Display( )
 
 	// specify shading to be flat:
 
-	glShadeModel( GL_FLAT );
+	glShadeModel( GL_SMOOTH );
 
 	// set the viewport to be a square centered in the window:
 
@@ -490,13 +493,26 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
+	//// Calculate light position
+	//float lightPosX = 5.0 * cos(10.0);
+	//float lightPosZ = 5.0 * sin(2.0 / (3 * Time));
+	//float lightPos[] = { lightPosX, 0.0f, lightPosZ, 1.0f };
 
-	if (TextureToggle == 1)
+	//// Set light position
+	//glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
+	glPushMatrix();
+	glRotatef(360 * Time, 0.25, 3.0, 0.0);
+	SetPointLight(GL_LIGHT0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+	glPopMatrix();
+	
+	if (TextureToggle == true)
 		glEnable(GL_TEXTURE_2D);
 	else
 		glDisable(GL_TEXTURE_2D);
 
-	if (TextureToggle == 2)
+
+	if (LightToggle == true)
 	{
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
@@ -508,12 +524,17 @@ Display( )
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 
-	if (NowPlanet == 1)
-	{
-		glBindTexture(GL_TEXTURE_2D, VenusTex);	// can do this here or in the VenusDL
-		glCallList(VenusDL);
-	}
+	//if (NowPlanet == 1)
+	//{
+	//	glBindTexture(GL_TEXTURE_2D, VenusTex);	// can do this here or in the VenusDL
+	//	glCallList(VenusDL);
+	//}
 
+	//if (NowPlanet == 2)
+	//{
+		glBindTexture(GL_TEXTURE_2D, EarthTex);	// can do this here or in the EarthDL
+		glCallList(EarthDL);
+	//}
 
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
@@ -524,6 +545,7 @@ Display( )
 	{
 		glPushMatrix( );
 		glCallList(VenusDL);
+		glCallList(EarthDL);
 		glPopMatrix( );
 	}
 #endif
@@ -810,6 +832,23 @@ InitGraphics( )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
 
+	int earthwidth, earthheight;
+	char* earthfile = (char*)"earth.bmp";
+	unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	if (texture == NULL)
+		fprintf(stderr, "Cannot open texture '%s'\n", file);
+	else
+		fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	glGenTextures(1, &EarthTex);
+	glBindTexture(GL_TEXTURE_2D, EarthTex);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
 	glutIdleFunc( Animate );
 
 	// init the glew package (a window must be open to do this):
@@ -854,6 +893,16 @@ InitLists( )
 	glBindTexture(GL_TEXTURE_2D, VenusTex);	// VenusTex must have already been created when this is called
 	glPushMatrix();
 	glScalef(0.95f, 0.95f, 0.95f);	// scale of venus sphere, from the table
+	glColor3f(1.0, 1.0, 1.0);
+	glCallList(SphereDL);			// a dl can call another dl that has been previously created
+	glPopMatrix();
+	glEndList();
+
+	EarthDL = glGenLists(2);
+	glNewList(EarthDL, GL_COMPILE);
+	glBindTexture(GL_TEXTURE_2D, EarthTex);	// EarthTex must have already been created when this is called
+	glPushMatrix();
+	glScalef(1.0f, 1.0f, 1.0f);	// scale of venus sphere, from the table
 	glColor3f(1.0, 1.0, 1.0);
 	glCallList(SphereDL);			// a dl can call another dl that has been previously created
 	glPopMatrix();
@@ -977,6 +1026,11 @@ Keyboard( unsigned char c, int x, int y )
 				glutIdleFunc(Animate);
 			break;
 
+		case 'e':
+		case 'E':
+			NowPlanet = 2;
+			break;
+
 		case 'v':
 		case 'V':
 			NowPlanet = 1;
@@ -985,18 +1039,20 @@ Keyboard( unsigned char c, int x, int y )
 		case 't':
 		case 'T':
 			TextureToggle = !TextureToggle;
-			(TextureToggle ? 1 : 2);
+			if (TextureToggle)
+				TextureToggle = true;
+			else
+				TextureToggle = false;
 			break;
 
-		//case 'x':
-		//case 'X':
-		//	TextureToggle = 1;
-		//	break;
-
-		//case 'z':
-		//case 'Z':
-		//	TextureToggle = 2;
-		//	break;
+		case 'l':
+		case 'L':
+			LightToggle = !LightToggle;
+			if (LightToggle)
+				LightToggle = true;
+			else
+				LightToggle = false;
+			break;
 
 
 		case ESCAPE:
@@ -1127,8 +1183,8 @@ Reset( )
 	NowProjection = PERSP;
 	Xrot = Yrot = 0.;
 	Frozen = FALSE;
-	TextureToggle = 1;
-	NowPlanet = 1;
+	TextureToggle = true;
+	NowPlanet = 2;
 }
 
 
