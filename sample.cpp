@@ -202,9 +202,14 @@ float	Time;					// used for animation, this has a value between 0. and 1.
 int		Xmouse, Ymouse;			// mouse values
 float	Xrot, Yrot;				// rotation angles in degrees
 GLuint	SphereDL, VenusDL;		// display lists
-GLuint	EarthDL;				// display lists
-GLuint	VenusTex;				// texture object
-GLuint	EarthTex;				// texture object
+GLuint	EarthDL, MoonDL;		// display lists
+GLuint	SaturnDL, JupiterDL;	// display lists
+GLuint	UranusDL, NeptuneDL;	// display lists
+GLuint  PlutoDL;				// display lists
+GLuint	VenusTex, EarthTex;		// texture object
+GLuint	MoonTex, JupiterTex;	// texture object
+GLuint	SaturnTex, UranusTex;	// texture object
+GLuint	NeptuneTex, PlutoTex;	// texture object
 bool	TextureToggle;			// variable to toggle the texture
 bool	LightToggle;			// variable to hold toggle value		
 int		NowPlanet;				// variable for toggling planets
@@ -493,14 +498,6 @@ Display( )
 
 	glEnable( GL_NORMALIZE );
 
-	//// Calculate light position
-	//float lightPosX = 5.0 * cos(10.0);
-	//float lightPosZ = 5.0 * sin(2.0 / (3 * Time));
-	//float lightPos[] = { lightPosX, 0.0f, lightPosZ, 1.0f };
-
-	//// Set light position
-	//glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
 	glPushMatrix();
 	glRotatef(360 * Time, 0.25, 3.0, 0.0);
 	SetPointLight(GL_LIGHT0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0);
@@ -524,17 +521,23 @@ Display( )
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	}
 
-	//if (NowPlanet == 1)
-	//{
-	//	glBindTexture(GL_TEXTURE_2D, VenusTex);	// can do this here or in the VenusDL
-	//	glCallList(VenusDL);
-	//}
+	if (NowPlanet == 1)
+	{
+		glBindTexture(GL_TEXTURE_2D, VenusTex);	// can do this here or in the VenusDL
+		glCallList(VenusDL);
+	}
 
-	//if (NowPlanet == 2)
-	//{
+	if (NowPlanet == 2)
+	{
 		glBindTexture(GL_TEXTURE_2D, EarthTex);	// can do this here or in the EarthDL
 		glCallList(EarthDL);
-	//}
+	}
+
+	if (NowPlanet == 3)
+	{
+		glBindTexture(GL_TEXTURE_2D, MoonTex);	// can do this here or in the EarthDL
+		glCallList(MoonDL);
+	}
 
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
@@ -849,6 +852,108 @@ InitGraphics( )
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
 
+	int moonwidth, moonheight;
+	char* moonfile = (char*)"moon.bmp";
+	unsigned char* moontexture = BmpToTexture(moonfile, &moonwidth, &moonheight);
+	if (texture == NULL)
+		fprintf(stderr, "Cannot open texture '%s'\n", file);
+	else
+		fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", moonfile, moonwidth, moonheight);
+
+	glGenTextures(1, &MoonTex);
+	glBindTexture(GL_TEXTURE_2D, MoonTex);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, moonwidth, moonheight, 0, GL_RGB, GL_UNSIGNED_BYTE, moontexture);
+
+	//int earthwidth, earthheight;
+	//char* earthfile = (char*)"earth.bmp";
+	//unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	//if (texture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", file);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	//glGenTextures(1, &EarthTex);
+	//glBindTexture(GL_TEXTURE_2D, EarthTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
+	//int earthwidth, earthheight;
+	//char* earthfile = (char*)"earth.bmp";
+	//unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	//if (texture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", file);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	//glGenTextures(1, &EarthTex);
+	//glBindTexture(GL_TEXTURE_2D, EarthTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
+	//int earthwidth, earthheight;
+	//char* earthfile = (char*)"earth.bmp";
+	//unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	//if (texture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", file);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	//glGenTextures(1, &EarthTex);
+	//glBindTexture(GL_TEXTURE_2D, EarthTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
+	//int earthwidth, earthheight;
+	//char* earthfile = (char*)"earth.bmp";
+	//unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	//if (texture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", file);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	//glGenTextures(1, &EarthTex);
+	//glBindTexture(GL_TEXTURE_2D, EarthTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
+	//int earthwidth, earthheight;
+	//char* earthfile = (char*)"earth.bmp";
+	//unsigned char* earthtexture = BmpToTexture(earthfile, &earthwidth, &earthheight);
+	//if (texture == NULL)
+	//	fprintf(stderr, "Cannot open texture '%s'\n", file);
+	//else
+	//	fprintf(stderr, "Opened '%s': width = %d ; height = %d\n", earthfile, earthwidth, earthheight);
+
+	//glGenTextures(1, &EarthTex);
+	//glBindTexture(GL_TEXTURE_2D, EarthTex);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexImage2D(GL_TEXTURE_2D, 0, 3, earthwidth, earthheight, 0, GL_RGB, GL_UNSIGNED_BYTE, earthtexture);
+
 	glutIdleFunc( Animate );
 
 	// init the glew package (a window must be open to do this):
@@ -903,6 +1008,16 @@ InitLists( )
 	glBindTexture(GL_TEXTURE_2D, EarthTex);	// EarthTex must have already been created when this is called
 	glPushMatrix();
 	glScalef(1.0f, 1.0f, 1.0f);	// scale of venus sphere, from the table
+	glColor3f(1.0, 1.0, 1.0);
+	glCallList(SphereDL);			// a dl can call another dl that has been previously created
+	glPopMatrix();
+	glEndList();
+
+	MoonDL = glGenLists(3);
+	glNewList(MoonDL, GL_COMPILE);
+	glBindTexture(GL_TEXTURE_2D, MoonTex);	// MoonTex must have already been created when this is called
+	glPushMatrix();
+	glScalef(0.27f, 0.27f, 0.27f);	// scale of moon sphere, from the table
 	glColor3f(1.0, 1.0, 1.0);
 	glCallList(SphereDL);			// a dl can call another dl that has been previously created
 	glPopMatrix();
@@ -1026,14 +1141,19 @@ Keyboard( unsigned char c, int x, int y )
 				glutIdleFunc(Animate);
 			break;
 
+		case 'v':
+		case 'V':
+			NowPlanet = 1;
+			break;
+
 		case 'e':
 		case 'E':
 			NowPlanet = 2;
 			break;
 
-		case 'v':
-		case 'V':
-			NowPlanet = 1;
+		case 'm':
+		case 'M':
+			NowPlanet = 3;
 			break;
 
 		case 't':
